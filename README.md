@@ -1,32 +1,56 @@
-# 🎉 전국 축제 알리미 (위치 기반 스마트 축제 탐색 서비스)
+# 🎉 전국 축제 알리미 (Original PHP Edition)
 
 <div align="left">
   <img src="https://img.shields.io/badge/PHP_8.2-777BB4?style=for-the-badge&logo=php&logoColor=white">
+  <img src="https://img.shields.io/badge/Apache-D22128?style=for-the-badge&logo=apache&logoColor=white">
   <img src="https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white">
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
 </div>
 <br>
 
+> **💡 Polyglot Backend Project**
+> 본 프로젝트는 프론트엔드와 백엔드를 완전히 분리하고, 동일한 비즈니스 로직을 3가지 다른 백엔드 기술 스택으로 구현하여 시스템 아키텍처의 유연성을 증명하는 다국어 백엔드 프로젝트의 **모태가 된 원본 버전**입니다.
+> - **[Java Spring Boot 버전 보러가기](https://github.com/cloud277266/festival-location-service-java)**
+> - **[Node.js 버전 보러가기](https://github.com/cloud277266/festival-location-service-node)**
+
 ## 📌 프로젝트 소개
 
-**전국 축제 알리미**는 한국관광공사 공공데이터 API를 활용하여 전국 226개 시/군/구의 축제 정보를 실시간으로 제공하는 모바일 친화적 웹 서비스입니다. 방대한 공공데이터를 브라우저에서 직접 처리할 때 발생하는 렌더링 지연 문제를 해결하기 위해 **백엔드 API 기반 아키텍처**를 독립적으로 구축하였으며, 다수의 데이터를 지연 없이 처리하기 위한 **비동기 페이징(Pagination) 처리**와 **자체 거리 계산 알고리즘 최적화**에 집중하여 개발했습니다.
+**전국 축제 알리미 (PHP Version)**는 한국관광공사 공공데이터 API를 활용하여 전국 축제 정보를 수집하고, 사용자 위치 기반으로 큐레이션하는 서비스의 **프로토타입이자 핵심 데이터 파이프라인이 구축된 프로젝트**입니다. Docker를 활용한 인프라 구성부터 cURL 기반의 데이터 동기화 스크립트까지, 서비스의 전체적인 흐름을 설계하는 데 집중했습니다.
 
-## ✨ 핵심 기능 (Key Features)
+## ✨ 핵심 기술적 특징 (Key Features)
 
-* **자체 거리 계산 알고리즘:** 데이터베이스 SQL 쿼리 내에 지구의 곡률을 반영한 **하버사인(Haversine) 공식**을 적용하여, 사용자 GPS 좌표 기준 가장 가까운 축제를 즉각적으로 연산 및 정렬
-* **대용량 데이터 페이징 최적화:** 수천 건의 축제 데이터를 한 번에 로드하지 않고, 서버 단에서 `LIMIT`과 `OFFSET`을 활용해 분할 응답하는 **Offset-based Pagination** 구현으로 클라이언트 메모리 부하 최소화
-* **공공데이터 API 자동 동기화:** 크론(`cron`) 작업을 통해 외부 공공데이터 API의 최신 축제 데이터를 자체 데이터베이스로 지속 동기화(Batch Insert/Update)하여, 외부 API 서버 장애 시에도 끊김 없는 서비스 제공
-* **스마트 지역 선택 (Fallback UI):** 브라우저 위치(GPS) 권한 거부 상황을 대비해 전국 17개 시/도 및 226개 시/군/구 좌표를 모듈화(`regions.js`)하여, 별도의 유료 Geocoding API 없이도 정밀한 수동 검색 지원
-* **동적 예외 처리 및 반응형 UI:** Tailwind CSS를 활용한 디바이스 맞춤형 Grid 레이아웃 적용 및 이미지 누락 데이터를 위한 Base64 기반의 SVG Fallback 이미지 동적 렌더링 적용
+* **Robust Data Pipeline:** `fetch_festivals.php` 스크립트를 통해 공공데이터 API의 수천 건의 데이터를 배치 처리하고 `ON DUPLICATE KEY UPDATE` 구문으로 효율적인 DB 최신화 구현
+* **Native SQL Optimization:** PHP 레벨의 연산을 최소화하기 위해 MySQL 내장 함수(`acos`, `cos`, `sin`, `radians`)를 활용한 **하버사인(Haversine) 공식**을 쿼리에 직접 적용
+* **Infrastructure as Code (Docker):** Apache, PHP, MySQL 환경을 Docker 컨테이너로 규격화하여 개발 및 배포 환경의 일관성 확보
+* **Vanilla JS Responsive UI:** 외부 라이브러리 의존성을 최소화하고 Vanilla JavaScript와 Tailwind CSS만을 활용하여 가볍고 빠른 반응형 웹 인터페이스 구현
+* **Security Layer:** DB 연결 정보 및 API 키를 별도의 `config/db.php`로 분리하고 `.gitignore` 및 샘플 파일을 제공하여 보안성 준수
+
+### 🚀 Action (해결 로직 구현)
+- **데이터 동기화 설계:** 외부 API의 응답 속도와 트래픽 제한을 고려하여, 실시간 호출 대신 자체 DB에 동기화하는 배치 처리 아키텍처 설계.
+- **위치 기반 검색 엔진:** 사용자의 위도/경도 좌표를 기반으로 가장 가까운 축제를 거리순으로 정렬하는 기능을 PHP PDO와 MySQL 엔진의 조합으로 최적화.
+- **사용자 경험(UX) 개선:** GPS 권한 거부 시를 대비한 `regions.js` 기반의 수동 지역 선택 시스템 및 데이터 부하를 줄이기 위한 숫자 페이지네이션(Pagination) 도입.
+
+### 🎯 Result (결과 및 성과)
+- 방대한 공공데이터를 안정적으로 관리할 수 있는 백엔드 기초 시스템을 완성하였으며, 이는 이후 Java와 Node.js로 시스템을 확장하는 데 결정적인 데이터 모델이 되었습니다.
+- 백엔드와 프론트엔드가 철저히 분리된 구조를 설계하여, 향후 백엔드 엔진을 어떤 언어로 교체하더라도 서비스 지속이 가능한 **유연한 아키텍처의 기반**을 마련했습니다.
 
 <br>
 
-## 💡 기술적 의사결정 및 문제 해결 (PAAR)
+## ⚙️ 실행 방법 (Getting Started)
 
-* **Problem (문제):** 공공데이터 API에서 전국 단위의 데이터를 실시간 호출할 경우 응답 속도 저하 발생.
-* **Analyze (분석):** 모바일 환경에서 클라이언트가 직접 데이터를 필터링하고 연산하는 것은 성능에 치명적이라 판단.
-* **Action (행동):** View(화면)와 Controller(API)를 분리. PHP 내부 API를 구축하여 무거운 연산(거리 계산, 페이징 분할)을 MySQL 데이터베이스 엔진 단으로 이관.
-* **Result (결과):** 대규모 데이터에서도 브라우저 렌더링 지연이 없는 쾌적한 UX를 달성하였으며, 추후 백엔드를 Spring Boot 등 타 언어로 마이그레이션하기 용이한 확장성 확보.
-
+1.  **환경 설정 파일 준비:**
+    ```bash
+    cp config/config.sample.php config/db.php
+    ```
+    *(해당 파일 내에 DB 비밀번호 및 공공데이터 API 키 입력)*
+2.  **Docker 컨테이너 빌드 및 실행:**
+    ```bash
+    docker-compose up -d
+    ```
+3.  **축제 데이터 초기 동기화:**
+    ```bash
+    docker exec -it festival_web php /var/www/html/tasks/fetch_festivals.php
+    ```
+4.  **브라우저 접속:** `http://localhost:8080`
